@@ -123,9 +123,12 @@ export const mockDb = {
     const { mood, page = 1, limit = 10, sort = 'latest', replyStyle = 'all' } = options || {};
     let filtered = vents.filter(v => v.showOnFeed);
     
-    // Filter by last 48 hours
+    // Filter by last 48 hours, but exempt original starter vents so the feed is never empty!
     const cutoff = Date.now() - 48 * 60 * 60 * 1000;
-    filtered = filtered.filter(v => new Date(v.createdAt).getTime() > cutoff);
+    filtered = filtered.filter(v => {
+      if (['v1', 'v2', 'v3', 'v4', 'v5', 'v6'].includes(v.id)) return true;
+      return new Date(v.createdAt).getTime() > cutoff;
+    });
     
     if (mood && mood !== 'all') {
       filtered = filtered.filter(v => v.mood === mood);

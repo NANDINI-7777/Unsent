@@ -1,4 +1,4 @@
-export type ScreenName = 'landing' | 'vent' | 'waiting' | 'reply' | 'feed';
+export type ScreenName = 'landing' | 'vent' | 'waiting' | 'reply' | 'feed' | 'history';
 
 export type Mood = {
   emoji: string;

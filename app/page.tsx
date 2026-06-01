@@ -11,6 +11,7 @@ import { VentScreen } from '@/components/screens/VentScreen';
 import { WaitingScreen } from '@/components/screens/WaitingScreen';
 import { ReplyScreen } from '@/components/screens/ReplyScreen';
 import { FeedScreen } from '@/components/screens/FeedScreen';
+import { HistoryScreen } from '@/components/screens/HistoryScreen';
 
 const screens = {
   landing: LandingScreen,
@@ -18,6 +19,7 @@ const screens = {
   waiting: WaitingScreen,
   reply: ReplyScreen,
   feed: FeedScreen,
+  history: HistoryScreen,
 };
 
 export default function Home() {

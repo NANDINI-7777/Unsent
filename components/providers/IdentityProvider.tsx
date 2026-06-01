@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useIdentityStore } from '@/store/useIdentityStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface IdentityContextType {
   deviceId: string;
@@ -17,10 +18,12 @@ const IdentityContext = createContext<IdentityContextType>({
 
 export function IdentityProvider({ children }: { children: ReactNode }) {
   const { deviceId, alias, isInitialized, initIdentity } = useIdentityStore();
+  const initAuth = useAuthStore((state) => state.initAuth);
 
   useEffect(() => {
     initIdentity();
-  }, [initIdentity]);
+    initAuth();
+  }, [initIdentity, initAuth]);
 
   return (
     <IdentityContext.Provider value={{ deviceId, alias, isInitialized }}>

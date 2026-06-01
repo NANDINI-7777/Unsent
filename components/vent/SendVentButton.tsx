@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { useVentStore } from '@/store/useVentStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useIdentityStore } from '@/store/useIdentityStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { detectCrisis } from '@/lib/crisis';
 import { filterProfanity } from '@/lib/profanity';
 import { TRANSLATIONS } from '@/lib/translations';
@@ -57,7 +58,27 @@ export function SendVentButton() {
 
       const vent = await response.json();
       setActiveVent(vent);
+      
+      // Persistent Local History Fallback
+      if (typeof window !== 'undefined') {
+        const historyJson = localStorage.getItem('unsent_local_history') || '[]';
+        const history = JSON.parse(historyJson);
+        const userState = useAuthStore.getState().user;
+        const newLocalVent = {
+          ...vent,
+          userId: userState ? userState.id : undefined
+        };
+        localStorage.setItem('unsent_local_history', JSON.stringify([newLocalVent, ...history]));
+        
+        // Refresh local memory history
+        useAuthStore.getState().fetchUserHistory();
+      }
+
       reset();
+      
+      // Trigger AI reply generation in the background!
+      useAppStore.getState().triggerBackgroundReply(vent);
+
       navigateTo('waiting');
     } catch (err) {
       setError(err instanceof Error ? err.message : t.errorGeneric);

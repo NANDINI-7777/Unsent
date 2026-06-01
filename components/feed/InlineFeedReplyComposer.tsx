@@ -6,10 +6,11 @@ import { Send } from 'lucide-react';
 import { useIdentityStore } from '@/store/useIdentityStore';
 import { useAppStore } from '@/store/useAppStore';
 import { TRANSLATIONS } from '@/lib/translations';
+import type { Reply } from '@/types';
 
 interface InlineFeedReplyComposerProps {
   ventId: string;
-  onReplySent: () => void;
+  onReplySent: (reply: Reply) => void;
 }
 
 export function InlineFeedReplyComposer({ ventId, onReplySent }: InlineFeedReplyComposerProps) {
@@ -30,13 +31,16 @@ export function InlineFeedReplyComposer({ ventId, onReplySent }: InlineFeedReply
 
     setIsSending(true);
     try {
-      await fetch('/api/replies', {
+      const response = await fetch('/api/replies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ventId, content, deviceId }),
       });
-      setContent('');
-      onReplySent();
+      if (response.ok) {
+        const reply = await response.json();
+        setContent('');
+        onReplySent(reply);
+      }
     } catch (e) {
       console.error('Failed to send reply:', e);
     } finally {

@@ -6,34 +6,52 @@ import { useAppStore } from '@/store/useAppStore';
 import { TRANSLATIONS } from '@/lib/translations';
 
 export function AlertsModal() {
-  const { showAlertsModal, setShowAlertsModal, language } = useAppStore();
+  const { 
+    showAlertsModal, 
+    setShowAlertsModal, 
+    language,
+    alerts,
+    setCurrentReply,
+    navigateTo
+  } = useAppStore();
+  
   const t = TRANSLATIONS[language];
 
-  const sampleAlertsList = [
+  const staticAlerts = [
     {
-      id: 1,
+      id: 'static-1',
       icon: Heart,
       iconColor: 'text-pink-500 bg-pink-100',
       title: t.alert1Title,
       description: t.alert1Desc,
       time: '20m',
+      reply: undefined,
+      isDynamic: false
     },
     {
-      id: 2,
+      id: 'static-2',
       icon: MessageSquare,
       iconColor: 'text-indigo-500 bg-indigo-100',
       title: t.alert2Title,
       description: t.alert2Desc,
       time: '1h',
-    },
-    {
-      id: 3,
-      icon: Star,
-      iconColor: 'text-amber-500 bg-amber-100',
-      title: t.alert3Title,
-      description: t.alert3Desc,
-      time: '4h',
-    },
+      reply: undefined,
+      isDynamic: false
+    }
+  ];
+
+  const allAlerts = [
+    ...alerts.map((a) => ({
+      id: a.id,
+      icon: MessageSquare,
+      iconColor: 'text-pink-500 bg-pink-100',
+      title: a.title,
+      description: a.description,
+      time: a.time,
+      reply: a.reply,
+      isDynamic: true
+    })),
+    ...staticAlerts
   ];
 
   return (
@@ -71,7 +89,7 @@ export function AlertsModal() {
             </button>
 
             {/* Header */}
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mb-6 select-none">
               <div className="p-2 rounded-xl bg-pink-100 flex items-center justify-center text-pink-500">
                 <Bell size={18} />
               </div>
@@ -80,32 +98,44 @@ export function AlertsModal() {
 
             {/* Alerts List */}
             <div className="flex flex-col gap-4 max-h-[300px] overflow-y-auto pr-1 no-scrollbar">
-              {sampleAlertsList.map((alert) => {
+              {allAlerts.map((alert) => {
                 const Icon = alert.icon;
                 return (
-                  <div 
-                    key={alert.id} 
-                    className="flex gap-3 items-start p-3 rounded-2xl bg-white/40 border border-pink-200/20 hover:bg-white/60 transition-colors"
+                  <motion.div 
+                    key={alert.id}
+                    onClick={() => {
+                      if (alert.isDynamic && alert.reply) {
+                        setCurrentReply(alert.reply);
+                        setShowAlertsModal(false);
+                        navigateTo('reply');
+                      }
+                    }}
+                    className={`flex gap-3 items-start p-3 rounded-2xl border transition-colors select-none ${
+                      alert.isDynamic 
+                        ? 'bg-pink-100/40 border-pink-200/30 hover:bg-pink-200/40 cursor-pointer shadow-pink' 
+                        : 'bg-white/40 border-pink-200/20 hover:bg-white/60'
+                    }`}
+                    whileTap={alert.isDynamic ? { scale: 0.98 } : {}}
                   >
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${alert.iconColor}`}>
                       <Icon size={16} />
                     </div>
-                    <div className="flex flex-col gap-0.5 flex-1">
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold font-body text-text-dark">{alert.title}</span>
-                        <span className="text-[9px] font-body text-text-soft">{alert.time}</span>
+                        <span className="text-xs font-bold font-body text-text-dark truncate mr-2">{alert.title}</span>
+                        <span className="text-[9px] font-body text-text-soft shrink-0">{alert.time}</span>
                       </div>
-                      <p className="text-[11px] font-body text-text-mid leading-relaxed mt-0.5">
+                      <p className="text-[11px] font-body text-text-mid leading-relaxed mt-0.5 break-words">
                         {alert.description}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
 
             {/* Bottom info */}
-            <p className="text-[10px] text-text-soft font-body text-center mt-6 tracking-wide">
+            <p className="text-[10px] text-text-soft font-body text-center mt-6 tracking-wide select-none">
               {t.alertsFooter}
             </p>
           </motion.div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Home, MessageCircle, PenLine } from 'lucide-react';
+import { Home, MessageCircle, PenLine, History } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { TRANSLATIONS } from '@/lib/translations';
 import type { ScreenName } from '@/types';
@@ -10,6 +10,7 @@ const navItems: { icon: typeof Home; label: string; screen: ScreenName }[] = [
   { icon: Home, label: 'home', screen: 'landing' },
   { icon: MessageCircle, label: 'feed', screen: 'feed' },
   { icon: PenLine, label: 'vent', screen: 'vent' },
+  { icon: History, label: 'history', screen: 'history' },
 ];
 
 export function BottomNavBar() {
@@ -20,6 +21,7 @@ export function BottomNavBar() {
     if (label === 'home') return t.navHome;
     if (label === 'feed') return t.navFeed;
     if (label === 'vent') return t.navVent;
+    if (label === 'history') return 'History';
     return label;
   };
 
@@ -31,7 +33,8 @@ export function BottomNavBar() {
           const isActive = currentScreen === item.screen ||
             (item.screen === 'landing' && item.label === 'home' && currentScreen === 'landing') ||
             (item.screen === 'feed' && currentScreen === 'feed') ||
-            (item.screen === 'vent' && (currentScreen === 'vent' || currentScreen === 'waiting' || currentScreen === 'reply'));
+            (item.screen === 'vent' && (currentScreen === 'vent' || currentScreen === 'waiting' || currentScreen === 'reply')) ||
+            (item.screen === 'history' && currentScreen === 'history');
 
           return (
             <motion.button
