@@ -103,10 +103,36 @@ export function AlertsModal() {
                 return (
                   <motion.div 
                     key={alert.id}
-                    onClick={() => {
+                    onClick={async () => {
                       if (alert.isDynamic && alert.reply) {
                         setCurrentReply(alert.reply);
                         setShowAlertsModal(false);
+                        
+                        // Fetch the parent vent defensively
+                        try {
+                          const ventResponse = await fetch(`/api/vents/${alert.reply.ventId}`);
+                          if (ventResponse.ok) {
+                            const ventData = await ventResponse.json();
+                            useAppStore.setState({ activeVent: ventData.vent });
+                          }
+                        } catch (err) {
+                          console.error('Failed to fetch parent vent for modal click:', err);
+                        }
+
+                        // Add to seen replies so it won't pop up again
+                        if (typeof window !== 'undefined') {
+                          try {
+                            const seenRepliesJson = localStorage.getItem('unsent_seen_replies') || '[]';
+                            const seenReplyIds = JSON.parse(seenRepliesJson);
+                            if (!seenReplyIds.includes(alert.id)) {
+                              seenReplyIds.push(alert.id);
+                              localStorage.setItem('unsent_seen_replies', JSON.stringify(seenReplyIds));
+                            }
+                          } catch (e) {
+                            console.error(e);
+                          }
+                        }
+
                         navigateTo('reply');
                       }
                     }}

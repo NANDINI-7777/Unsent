@@ -37,6 +37,7 @@ export function SendVentButton() {
 
     try {
       const filteredContent = filterProfanity(content);
+      const userState = useAuthStore.getState().user;
       const response = await fetch('/api/vents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -48,6 +49,7 @@ export function SendVentButton() {
           autoDelete: options.autoDelete,
           deviceId,
           gender,
+          userId: userState ? userState.id : undefined,
         }),
       });
 

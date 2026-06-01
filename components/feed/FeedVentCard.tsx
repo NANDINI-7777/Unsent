@@ -88,9 +88,51 @@ export function FeedVentCard({ vent }: FeedVentCardProps) {
           merged.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
           setRepliesList(merged);
           setReplyCount(merged.length);
+
+          // Defensive: Add all replies to seen replies immediately if this is my vent
+          const myDeviceId = localStorage.getItem('unsent_device_id');
+          if (vent.deviceId === myDeviceId && merged.length > 0) {
+            try {
+              const seenRepliesJson = localStorage.getItem('unsent_seen_replies') || '[]';
+              const seenReplyIds = JSON.parse(seenRepliesJson);
+              let changed = false;
+              merged.forEach(r => {
+                if (!seenReplyIds.includes(r.id)) {
+                  seenReplyIds.push(r.id);
+                  changed = true;
+                }
+              });
+              if (changed) {
+                localStorage.setItem('unsent_seen_replies', JSON.stringify(seenReplyIds));
+              }
+            } catch (e) {
+              console.error('Failed to update seen replies cache:', e);
+            }
+          }
         } else {
           setRepliesList(serverReplies);
           setReplyCount(serverReplies.length);
+
+          // Defensive: Add all replies to seen replies immediately if this is my vent
+          const myDeviceId = typeof window !== 'undefined' ? localStorage.getItem('unsent_device_id') : null;
+          if (vent.deviceId === myDeviceId && serverReplies.length > 0) {
+            try {
+              const seenRepliesJson = localStorage.getItem('unsent_seen_replies') || '[]';
+              const seenReplyIds = JSON.parse(seenRepliesJson);
+              let changed = false;
+              serverReplies.forEach(r => {
+                if (!seenReplyIds.includes(r.id)) {
+                  seenReplyIds.push(r.id);
+                  changed = true;
+                }
+              });
+              if (changed) {
+                localStorage.setItem('unsent_seen_replies', JSON.stringify(seenReplyIds));
+              }
+            } catch (e) {
+              console.error('Failed to update seen replies cache:', e);
+            }
+          }
         }
       } catch (err) {
         console.error('Failed to fetch replies:', err);

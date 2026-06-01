@@ -52,6 +52,26 @@ export function HistoryScreen() {
         if (replies.length > 0) {
           // Open thread with the latest reply
           setCurrentReply(replies[replies.length - 1]);
+
+          // Add all replies to seen replies so notifications are cleared for this vent!
+          if (typeof window !== 'undefined') {
+            try {
+              const seenRepliesJson = localStorage.getItem('unsent_seen_replies') || '[]';
+              const seenReplyIds = JSON.parse(seenRepliesJson);
+              let changed = false;
+              replies.forEach((r: any) => {
+                if (!seenReplyIds.includes(r.id)) {
+                  seenReplyIds.push(r.id);
+                  changed = true;
+                }
+              });
+              if (changed) {
+                localStorage.setItem('unsent_seen_replies', JSON.stringify(seenReplyIds));
+              }
+            } catch (e) {
+              console.error('Failed to update seen replies cache:', e);
+            }
+          }
         } else {
           setCurrentReply(null);
         }

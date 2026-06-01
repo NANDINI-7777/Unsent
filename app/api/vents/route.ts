@@ -48,22 +48,44 @@ export async function POST(request: Request) {
     // Create vent
     let vent;
     if (supabase) {
-      const { data, error } = await supabase
+      const insertData: any = {
+        content: filteredContent,
+        mood,
+        mood_emoji: body.moodEmoji || '🌸',
+        mood_color: body.moodColor || '#f56393',
+        reply_style: replyStyle || 'heart-to-heart',
+        show_on_feed: showOnFeed !== false,
+        auto_delete: autoDelete || false,
+        device_id: deviceId,
+        gender: gender || 'anon',
+        expires_at: autoDelete ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null,
+      };
+
+      // Pass user_id if authenticated
+      if (body.userId && body.userId !== 'null' && body.userId !== 'undefined') {
+        insertData.user_id = body.userId;
+      }
+
+      let { data, error } = await supabase
         .from('vents')
-        .insert({
-          content: filteredContent,
-          mood,
-          mood_emoji: body.moodEmoji || '🌸',
-          mood_color: body.moodColor || '#f56393',
-          reply_style: replyStyle || 'heart-to-heart',
-          show_on_feed: showOnFeed !== false,
-          auto_delete: autoDelete || false,
-          device_id: deviceId,
-          gender: gender || 'anon',
-          expires_at: autoDelete ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null,
-        })
+        .insert(insertData)
         .select()
         .single();
+
+      if (error) {
+        // Fallback retry if user_id column doesn't exist (error code 42703)
+        if (error.code === '42703' && insertData.user_id) {
+          console.warn('⚠️ user_id column does not exist in vents table yet. Retrying without user_id.');
+          delete insertData.user_id;
+          const retryRes = await supabase
+            .from('vents')
+            .insert(insertData)
+            .select()
+            .single();
+          data = retryRes.data;
+          error = retryRes.error;
+        }
+      }
 
       if (error) {
         console.error('Supabase createVent error:', error);

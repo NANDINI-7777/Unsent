@@ -100,13 +100,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
           // Link offline history: update any previous anonymous vents on this device to this user!
           try {
-            await supabase
+            const { error: linkErr } = await supabase
               .from('vents')
               .update({ user_id: authenticatedUser.id })
               .eq('device_id', deviceId)
               .is('user_id', null);
-          } catch (linkErr) {
-            console.warn('⚠️ Non-critical history linking error:', linkErr);
+            if (linkErr) {
+              console.warn('⚠️ Non-critical history linking failed (possibly user_id column missing):', linkErr.message);
+            }
+          } catch (err) {
+            console.warn('⚠️ Non-critical history linking exception:', err);
           }
 
           set({ user: authUser, isLoading: false });
@@ -185,19 +188,39 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     // 1. Supabase Cloud History Fetch
     if (supabase) {
       try {
-        let query = supabase
-          .from('vents')
-          .select('*, replies(count)');
+        let data = null;
+        let error = null;
 
         if (currentUser) {
-          // Fetch vents belonging to this user or this device
-          query = query.or(`user_id.eq.${currentUser.id},device_id.eq.${deviceId}`);
-        } else {
-          // Fetch vents belonging only to this anonymous device
-          query = query.eq('device_id', deviceId);
-        }
+          // Fetch vents belonging to this user or this device (defensively fallback if column is missing)
+          const res = await supabase
+            .from('vents')
+            .select('*, replies(count)')
+            .or(`user_id.eq.${currentUser.id},device_id.eq.${deviceId}`)
+            .order('created_at', { ascending: false });
 
-        const { data, error } = await query.order('created_at', { ascending: false });
+          if (res.error) {
+            console.warn('⚠️ History fetch with user_id failed, falling back to device_id only:', res.error.message);
+            const fallbackRes = await supabase
+              .from('vents')
+              .select('*, replies(count)')
+              .eq('device_id', deviceId)
+              .order('created_at', { ascending: false });
+            data = fallbackRes.data;
+            error = fallbackRes.error;
+          } else {
+            data = res.data;
+            error = res.error;
+          }
+        } else {
+          const res = await supabase
+            .from('vents')
+            .select('*, replies(count)')
+            .eq('device_id', deviceId)
+            .order('created_at', { ascending: false });
+          data = res.data;
+          error = res.error;
+        }
 
         if (error) throw error;
 

@@ -1,13 +1,16 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
+import { useIdentityStore } from '@/store/useIdentityStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { BottomNavBar } from './BottomNavBar';
 import { TRANSLATIONS } from '@/lib/translations';
 import { ShaderBackground } from '@/components/ui/ShaderBackground';
 import { AlertsModal } from '@/components/ui/AlertsModal';
+import type { Reply } from '@/types';
 
 interface AppShellProps {
   children: ReactNode;
@@ -25,8 +28,107 @@ export function AppShell({ children }: AppShellProps) {
     unreadAlertCount,
     setUnreadAlertCount
   } = useAppStore();
-  
   const t = TRANSLATIONS[language];
+  const { deviceId, isInitialized: identityInitialized } = useIdentityStore();
+  const { user } = useAuthStore();
+
+  // Cross-device, real-time background replies notification scanner
+  useEffect(() => {
+    if (!identityInitialized || !deviceId) return;
+
+    let isSubscribed = true;
+
+    const fetchNotifications = async () => {
+      try {
+        const params = new URLSearchParams({
+          deviceId,
+          userId: user?.id || '',
+        });
+        const response = await fetch(`/api/notifications?${params}`);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const serverReplies: Reply[] = data.replies || [];
+
+        if (!isSubscribed) return;
+
+        // Load seen replies array
+        const seenRepliesJson = localStorage.getItem('unsent_seen_replies') || '[]';
+        let seenReplyIds: string[] = [];
+        try {
+          seenReplyIds = JSON.parse(seenRepliesJson);
+        } catch (e) {
+          console.error('Failed to parse seen replies:', e);
+        }
+
+        // Filter out already seen replies
+        const unseenReplies = serverReplies.filter(r => !seenReplyIds.includes(r.id));
+
+        if (unseenReplies.length > 0) {
+          const appStore = useAppStore.getState();
+          const existingAlertIds = appStore.alerts.map(a => a.id);
+          
+          // Filter out alerts already in state to prevent duplicate badges
+          const newReplies = unseenReplies.filter(r => !existingAlertIds.includes(r.id));
+
+          if (newReplies.length > 0) {
+            // Stateless deterministic stranger alias hashing
+            const getConsistentAlias = (repDevId: string | undefined): string => {
+              if (!repDevId || repDevId === 'server' || repDevId.startsWith('ai')) {
+                return '??? stranger';
+              }
+              let hash = 0;
+              for (let i = 0; i < repDevId.length; i++) {
+                hash = repDevId.charCodeAt(i) + ((hash << 5) - hash);
+              }
+              const num = Math.abs(1000 + (hash % 9000));
+              return `stranger #${num}`;
+            };
+
+            // Map replies to AppAlert object structure
+            const newAlerts = newReplies.map(r => {
+              const alias = getConsistentAlias(r.deviceId);
+              return {
+                id: r.id,
+                title: `${alias} replied to your vent!`,
+                description: r.content,
+                time: 'Just now',
+                reply: r,
+              };
+            });
+
+            // Update app alerts state
+            useAppStore.setState({
+              alerts: [...newAlerts, ...appStore.alerts],
+              unreadAlertCount: appStore.unreadAlertCount + newAlerts.length,
+            });
+
+            // Trigger beautiful top float-down glass PWA toast notification for the most recent reply
+            const latestReply = newReplies[0];
+            const alias = getConsistentAlias(latestReply.deviceId);
+            appStore.setActiveNotification({
+              ventId: latestReply.ventId,
+              alias,
+              replyContent: latestReply.content,
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch background notifications:', err);
+      }
+    };
+
+    // Initial load
+    fetchNotifications();
+
+    // Check for fresh comments every 12 seconds in the background
+    const interval = setInterval(fetchNotifications, 12000);
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(interval);
+    };
+  }, [deviceId, identityInitialized, user?.id]);
 
   return (
     <div className="relative min-h-dvh flex flex-col w-full">
@@ -47,9 +149,36 @@ export function AppShell({ children }: AppShellProps) {
             className="fixed top-6 left-4 right-4 max-w-sm mx-auto z-[110] glass p-4 rounded-2xl border border-pink-300/60 shadow-pink-lg flex items-center justify-between cursor-pointer hover:bg-white/40 transition-all select-none"
             onClick={async () => {
               const appStore = useAppStore.getState();
+              // Find matching alert in store or use activeNotification details
               const matchingAlert = appStore.alerts.find(a => a.reply.ventId === activeNotification.ventId);
+              
               if (matchingAlert) {
                 setCurrentReply(matchingAlert.reply);
+                
+                // Fetch the parent vent defensively
+                try {
+                  const ventResponse = await fetch(`/api/vents/${matchingAlert.reply.ventId}`);
+                  if (ventResponse.ok) {
+                    const ventData = await ventResponse.json();
+                    useAppStore.setState({ activeVent: ventData.vent });
+                  }
+                } catch (err) {
+                  console.error('Failed to fetch parent vent for toast click:', err);
+                }
+
+                // Add to seen replies so it won't pop up again
+                if (typeof window !== 'undefined') {
+                  try {
+                    const seenRepliesJson = localStorage.getItem('unsent_seen_replies') || '[]';
+                    const seenReplyIds = JSON.parse(seenRepliesJson);
+                    if (!seenReplyIds.includes(matchingAlert.id)) {
+                      seenReplyIds.push(matchingAlert.id);
+                      localStorage.setItem('unsent_seen_replies', JSON.stringify(seenReplyIds));
+                    }
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }
               }
               setActiveNotification(null);
               setUnreadAlertCount(Math.max(0, unreadAlertCount - 1));
