@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" opacity="0.5">
+  <defs>
+    <radialGradient id="petal" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f56393" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#f56393" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Petal shapes scattered -->
+  <ellipse cx="40" cy="35" rx="12" ry="18" fill="url(#petal)" transform="rotate(-20 40 35)"/>
+  <ellipse cx="150" cy="55" rx="10" ry="15" fill="url(#petal)" transform="rotate(30 150 55)"/>
+  <ellipse cx="90" cy="120" rx="14" ry="20" fill="url(#petal)" transform="rotate(-45 90 120)"/>
+  <ellipse cx="170" cy="160" rx="11" ry="16" fill="url(#petal)" transform="rotate(15 170 160)"/>
+  <ellipse cx="30" cy="170" rx="13" ry="19" fill="url(#petal)" transform="rotate(-30 30 170)"/>
+  <!-- Small dots like pollen -->
+  <circle cx="70" cy="60" r="2" fill="#f56393" opacity="0.06"/>
+  <circle cx="130" cy="100" r="1.5" fill="#f56393" opacity="0.05"/>
+  <circle cx="110" cy="30" r="2.5" fill="#f56393" opacity="0.04"/>
+  <circle cx="55" cy="140" r="1.8" fill="#f56393" opacity="0.05"/>
+  <circle cx="180" cy="90" r="2" fill="#f56393" opacity="0.06"/>
+</svg>

@@ -1,0 +1,416 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════
+   🌸 UNSENT — Baby Pink Calm Design System
+   ═══════════════════════════════════════════════════ */
+
+:root {
+  /* ── Baby Pink Palette ── */
+  --pink-50:     #fff0f5;
+  --pink-100:    #ffe4ee;
+  --pink-200:    #ffc9dd;
+  --pink-300:    #ffaac8;
+  --pink-400:    #ff85ae;
+  --pink-500:    #f56393;
+  --pink-600:    #d94478;
+  --blush:       #f9e4ec;
+  --cream:       #fff8fb;
+  --mauve:       #c9788f;
+  --rose-mist:   #e8b4c4;
+  --fog:         #fdf0f5;
+  --text-dark:   #3d1f2b;
+  --text-mid:    #7a3d52;
+  --text-soft:   #b07080;
+
+  /* ── Semantic Colors ── */
+  --background:  var(--pink-50);
+  --foreground:  var(--text-dark);
+  --surface:     var(--pink-100);
+  --card-bg:     rgba(255, 255, 255, 0.60);
+  --card-border: rgba(255, 201, 221, 0.50);
+
+  /* ── Glassmorphism ── */
+  --glass-bg:    rgba(255, 255, 255, 0.60);
+  --glass-border: rgba(255, 201, 221, 0.40);
+  --glass-blur:  16px;
+  --glass-shadow: 0 4px 20px rgba(245, 99, 147, 0.10);
+
+  /* ── Transitions ── */
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Tailwind v4 Theme Extension ── */
+@theme inline {
+  --color-pink-50: var(--pink-50);
+  --color-pink-100: var(--pink-100);
+  --color-pink-200: var(--pink-200);
+  --color-pink-300: var(--pink-300);
+  --color-pink-400: var(--pink-400);
+  --color-pink-500: var(--pink-500);
+  --color-pink-600: var(--pink-600);
+  --color-blush: var(--blush);
+  --color-cream: var(--cream);
+  --color-mauve: var(--mauve);
+  --color-rose-mist: var(--rose-mist);
+  --color-fog: var(--fog);
+  --color-text-dark: var(--text-dark);
+  --color-text-mid: var(--text-mid);
+  --color-text-soft: var(--text-soft);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-display: 'Cormorant Garamond', serif;
+  --font-heading: 'DM Serif Display', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-accent: 'Lora', serif;
+
+  /* Custom animations */
+  --animate-pulse-orb: pulse-orb 2s ease-in-out infinite;
+  --animate-ring-expand: ring-expand 2s ease-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.5s var(--spring) forwards;
+  --animate-shake: shake 0.5s ease-in-out;
+  --animate-typing-dot: typing-dot 1.4s infinite ease-in-out;
+  --animate-blink: blink 2s infinite;
+  --animate-spin-slow: spin 3s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════
+   Base Styles
+   ═══════════════════════════════════════════════════ */
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: transparent;
+  color: var(--text-dark);
+  font-family: var(--font-body);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ── Ambient Background ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(255, 170, 200, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(245, 99, 147, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(249, 228, 236, 0.4) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Petal pattern overlay ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url('/patterns/petal-bg.svg');
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Noise texture ── */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════════════
+   Glassmorphism Utilities
+   ═══════════════════════════════════════════════════ */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 201, 221, 0.5);
+  box-shadow: 0 8px 32px rgba(245, 99, 147, 0.12);
+}
+
+.glass-nav {
+  background: rgba(255, 240, 245, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 201, 221, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════
+   Custom Scrollbar — Baby Pink
+   ═══════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--pink-200);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pink-300);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--pink-200) transparent;
+}
+
+/* ═══════════════════════════════════════════════════
+   Selection Color
+   ═══════════════════════════════════════════════════ */
+
+::selection {
+  background: rgba(245, 99, 147, 0.2);
+  color: var(--text-dark);
+}
+
+/* ═══════════════════════════════════════════════════
+   Pink Caret for Textareas/Inputs
+   ═══════════════════════════════════════════════════ */
+
+textarea, input[type="text"] {
+  caret-color: var(--pink-500);
+}
+
+textarea:focus, input[type="text"]:focus {
+  outline: none;
+}
+
+textarea::placeholder, input::placeholder {
+  color: var(--text-soft);
+}
+
+/* ═══════════════════════════════════════════════════
+   Keyframe Animations
+   ═══════════════════════════════════════════════════ */
+
+@keyframes pulse-orb {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes ring-expand {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-4px); }
+  30%, 70% { transform: translateX(4px); }
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes aurora-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ═══════════════════════════════════════════════════
+   Utility Classes
+   ═══════════════════════════════════════════════════ */
+
+.text-gradient-pink {
+  background: linear-gradient(135deg, var(--pink-500), var(--pink-600));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-pink {
+  background: linear-gradient(135deg, var(--pink-400), var(--pink-500));
+}
+
+.bg-gradient-pink-soft {
+  background: linear-gradient(135deg, var(--pink-100), var(--pink-200));
+}
+
+.border-pink-soft {
+  border: 1px solid rgba(255, 201, 221, 0.5);
+}
+
+.shadow-pink {
+  box-shadow: 0 4px 20px rgba(245, 99, 147, 0.10);
+}
+
+.shadow-pink-lg {
+  box-shadow: 0 8px 40px rgba(245, 99, 147, 0.15);
+}
+
+/* ── Mood accent bar ── */
+.mood-accent-bar {
+  width: 4px;
+  border-radius: 4px;
+  min-height: 100%;
+}
+
+/* ── Sent bubble (user's vent) ── */
+.bubble-sent {
+  background: rgba(245, 99, 147, 0.12);
+  border: 1px solid rgba(245, 99, 147, 0.25);
+  border-radius: 20px 20px 4px 20px;
+}
+
+/* ── Received bubble (stranger reply) ── */
+.bubble-received {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px 20px 20px 4px;
+}
+
+/* ── Responsive Content Spacing ── */
+.main-content {
+  padding-bottom: 110px; /* Spacing for the floating bottom navigation pill */
+}
+
+@media (min-width: 768px) {
+  body {
+    background: radial-gradient(circle at 10% 20%, rgba(255, 230, 238, 0.55) 0%, rgba(255, 245, 248, 0.85) 90%) !important;
+  }
+}
+
+/* ── Hide scrollbar for horizontal scroll ── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Focus wash effect ── */
+.focus-wash {
+  transition: background 0.3s ease;
+}
+.focus-wash:focus-within {
+  background: rgba(255, 180, 200, 0.05);
+}
+
+/* ── Pink pill chip ── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.3s var(--spring);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.chip-active {
+  background: var(--pink-100);
+  border: 1.5px solid var(--pink-300);
+  color: var(--text-dark);
+}
+
+.chip-inactive {
+  background: transparent;
+  border: 1.5px dashed var(--pink-200);
+  color: var(--text-mid);
+}
+
+.chip:hover {
+  transform: scale(1.03);
+}
+
+.chip:active {
+  transform: scale(0.97);
+}
+
+/* ── Custom cursor for desktop ── */
+@media (hover: hover) and (pointer: fine) {
+  .custom-cursor {
+    cursor: none;
+  }
+  
+  .cursor-dot {
+    width: 12px;
+    height: 12px;
+    background: var(--pink-400);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+    opacity: 0.7;
+    mix-blend-mode: multiply;
+  }
+  
+  .cursor-ring {
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--pink-300);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease-out;
+    opacity: 0.5;
+  }
+}
