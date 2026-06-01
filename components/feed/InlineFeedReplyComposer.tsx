@@ -38,6 +38,18 @@ export function InlineFeedReplyComposer({ ventId, onReplySent }: InlineFeedReply
       });
       if (response.ok) {
         const reply = await response.json();
+        
+        if (typeof window !== 'undefined') {
+          try {
+            const localRepliesJson = localStorage.getItem('unsent_local_replies') || '[]';
+            const localReplies = JSON.parse(localRepliesJson);
+            localReplies.push(reply);
+            localStorage.setItem('unsent_local_replies', JSON.stringify(localReplies));
+          } catch (err) {
+            console.error('Failed to save reply to localStorage:', err);
+          }
+        }
+
         setContent('');
         onReplySent(reply);
       }

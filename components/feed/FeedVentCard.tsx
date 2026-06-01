@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -19,6 +19,7 @@ export function FeedVentCard({ vent }: FeedVentCardProps) {
   const [repliesList, setRepliesList] = useState<Reply[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [replyCount, setReplyCount] = useState(vent.replyCount);
+  const [hasFetched, setHasFetched] = useState(false);
   const { language } = useAppStore();
   const t = TRANSLATIONS[language];
 
@@ -37,17 +38,59 @@ export function FeedVentCard({ vent }: FeedVentCardProps) {
     return `stranger #${num}`;
   };
 
+  // Safe client-side preloading to prevent hydration mismatch
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const localRepliesJson = localStorage.getItem('unsent_local_replies') || '[]';
+        const localReplies: Reply[] = JSON.parse(localRepliesJson);
+        const myLocalReplies = localReplies.filter(r => r.ventId === vent.id);
+        
+        if (myLocalReplies.length > 0) {
+          setRepliesList(myLocalReplies);
+          setReplyCount(prev => Math.max(prev, myLocalReplies.length));
+        }
+      } catch (e) {
+        console.error('Failed to pre-load local replies:', e);
+      }
+    }
+  }, [vent.id]);
+
   const toggleReplies = async () => {
     const nextState = !showReplies;
     setShowReplies(nextState);
     
-    if (nextState && repliesList.length === 0) {
+    if (nextState && !hasFetched) {
       setIsFetching(true);
       try {
         const response = await fetch(`/api/vents/${vent.id}/replies`);
+        let serverReplies: Reply[] = [];
         if (response.ok) {
           const data = await response.json();
-          setRepliesList(data.replies || []);
+          serverReplies = data.replies || [];
+          setHasFetched(true);
+        }
+
+        // Merge with local storage replies to prevent data loss in mock db mode or container spin-downs
+        if (typeof window !== 'undefined') {
+          const localRepliesJson = localStorage.getItem('unsent_local_replies') || '[]';
+          const localReplies: Reply[] = JSON.parse(localRepliesJson);
+          const myLocalReplies = localReplies.filter(r => r.ventId === vent.id);
+          
+          const merged = [...serverReplies];
+          myLocalReplies.forEach(localRep => {
+            if (!merged.some(r => r.id === localRep.id)) {
+              merged.push(localRep);
+            }
+          });
+          
+          // Sort by creation time ascending
+          merged.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          setRepliesList(merged);
+          setReplyCount(merged.length);
+        } else {
+          setRepliesList(serverReplies);
+          setReplyCount(serverReplies.length);
         }
       } catch (err) {
         console.error('Failed to fetch replies:', err);
@@ -119,8 +162,12 @@ export function FeedVentCard({ vent }: FeedVentCardProps) {
                 ventId={vent.id}
                 onReplySent={(newReply) => {
                   setReplyCount(c => c + 1);
-                  setRepliesList(prev => [...prev, newReply]);
+                  setRepliesList(prev => {
+                    if (prev.some(r => r.id === newReply.id)) return prev;
+                    return [...prev, newReply];
+                  });
                   setShowReply(false);
+                  setShowReplies(true);
                 }}
               />
             )}
