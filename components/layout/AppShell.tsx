@@ -130,13 +130,13 @@ export function AppShell({ children }: AppShellProps) {
     };
   }, [deviceId, identityInitialized, user?.id]);
 
-  // Auto-dismiss floating toast notification after 5 seconds
+  // Auto-dismiss floating toast notification after 3 seconds
   useEffect(() => {
     if (!activeNotification) return;
 
     const timer = setTimeout(() => {
       setActiveNotification(null);
-    }, 5000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [activeNotification, setActiveNotification]);
