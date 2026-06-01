@@ -48,7 +48,7 @@ export function AppFooter() {
       {/* Dedication */}
       <p className="font-accent italic text-[13px] text-mauve">
         💗 Dedicated to My Patronus Charm{' '}
-        <em className="text-pink-500 font-semibold">(Pre-Yeah)</em>
+        <span className="text-pink-500 font-semibold whitespace-nowrap inline-block">(Pre-Yeah)</span>
       </p>
     </motion.footer>
   );
