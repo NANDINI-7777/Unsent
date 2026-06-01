@@ -257,9 +257,9 @@ export const mockDb = {
 
     if (isHighlyEmotional && replyStyle === 'heart-to-heart') {
       const emotionalEnglishReplies = [
-        `i'm so sorry you're carrying this all alone yrr... you really don't deserve this weight. please don't let it get to you too much. take some time to breathe. me hu tere sath yahan 🫶🏻`,
+        `i'm so sorry you're carrying this all alone yrr... you really don't deserve this weight. please don't let it get to you too much. take some time to breathe. 🫶🏻`,
         `that sounds genuinely so exhausting and heavy, and i'm sorry you're going through this. please remember you're not alone. be gentle with yourself today. 🤍`,
-        `ik things feel completely overwhelming right now, but please don't lose heart. you are stronger than you think. take a slow breath. i'm right here with you. 🌸`,
+        `ik things feel completely overwhelming right now, but please don't lose heart. you are stronger than you think. take a slow breath. 🌸`,
         `it's okay to not be okay yrr... don't force yourself to act strong all the time. just take a moment to rest and breathe. sending you so much warmth. 💌`
       ];
       return emotionalEnglishReplies[Math.floor(Math.random() * emotionalEnglishReplies.length)];
@@ -284,13 +284,13 @@ export const mockDb = {
       } else if (isAnxietyOrPanic) {
         pool = replyStyle === 'fr tho'
           ? [`real talk: anxiety se bhagney ke bajaye usko face kar. thoda walk kar, gaane sun. protect your peace.`, `panic mode me mat ja bro. saans le, ye phase bhi chala jayega.`]
-          : [`i feel you... achanak anxiety hona bohot heavy lagta hai. ek glass paani pi aur thodi gehri saans le. mai tere sath hu. 🤍`, `sab theek ho jayega yaar. itna darr mat, tu bohot strong hai. take it easy. 🌸`];
+          : [`i feel you... achanak anxiety hona bohot heavy lagta hai. ek glass paani pi aur thodi gehri saans le. 🤍`, `sab theek ho jayega yaar. itna darr mat, tu bohot strong hai. take it easy. 🌸`];
       } else {
         // Fallback Hinglish replies
         const heartToHeartRepliesHinglish = [
-          `sun, ye sab temporary hai. tu bohot strong hai aur ye phase bhi nikal jayega. tension mat le, mai yahan tere saath hu. 🤍`,
+          `sun, ye sab temporary hai. tu bohot strong hai aur ye phase bhi nikal jayega. tension mat le, chill maar thoda. 🤍`,
           `i feel you. itna load mat le yaar. sab theek ho jayega, bas thodi sa saans le aur be strong.`,
-          `jo bhi ho, tu ye akele nahi jhel ${gender === 'girl' ? 'rahi' : (gender === 'boy' ? 'raha' : 'rahe')} h. me hu tere sath yahan. 🫶🏻`,
+          `jo bhi ho, tu ye akele nahi jhel ${gender === 'girl' ? 'rahi' : (gender === 'boy' ? 'raha' : 'rahe')} h. tension mat le, sab theek ho jayega. 🫶🏻`,
         ];
         const frThoRepliesHinglish = [
           `dekh sach bolu toh — jo cheez tere control me nahi hai, uski chinta karna band kar. khud par focus kar fr.`,
