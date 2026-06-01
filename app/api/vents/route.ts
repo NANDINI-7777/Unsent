@@ -112,6 +112,98 @@ export async function POST(request: Request) {
   }
 }
 
+async function seedStarterVents(supabaseClient: any) {
+  try {
+    console.log('🌱 Seeding starter vents into Supabase...');
+    const starterVents = [
+      {
+        content: "i studied for 3 weeks straight and still failed. everyone thinks im smart but i literally can't do this anymore.",
+        mood: 'dead inside',
+        mood_emoji: '💀',
+        mood_color: '#c9788f',
+        reply_style: 'heart-to-heart',
+        show_on_feed: true,
+        auto_delete: false,
+        device_id: 'sample-1',
+        gender: 'anon',
+        created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+      },
+      {
+        content: "my best friend ghosted me after 4 years and i still don't know what i did wrong",
+        mood: 'not okay',
+        mood_emoji: '🥀',
+        mood_color: '#d94478',
+        reply_style: 'heart-to-heart',
+        show_on_feed: true,
+        auto_delete: false,
+        device_id: 'sample-2',
+        gender: 'anon',
+        created_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+      },
+      {
+        content: "pretending to be okay in every group chat while literally falling apart alone in my room lol",
+        mood: 'totally fine',
+        mood_emoji: '🙃',
+        mood_color: '#ffc9dd',
+        reply_style: 'fr tho',
+        show_on_feed: true,
+        auto_delete: false,
+        device_id: 'sample-3',
+        gender: 'anon',
+        created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+      },
+      {
+        content: "everyone around me is getting internships and relationships and im just here existing",
+        mood: 'cooked',
+        mood_emoji: '😮‍💨',
+        mood_color: '#ffaac8',
+        reply_style: 'fr tho',
+        show_on_feed: true,
+        auto_delete: false,
+        device_id: 'sample-4',
+        gender: 'anon',
+        created_at: new Date(Date.now() - 1000 * 60 * 200).toISOString(),
+      },
+      {
+        content: "my parents compare me to my cousin every single day and wonder why i have no confidence",
+        mood: 'melting',
+        mood_emoji: '🫠',
+        mood_color: '#ff85ae',
+        reply_style: 'roast me',
+        show_on_feed: true,
+        auto_delete: false,
+        device_id: 'sample-5',
+        gender: 'anon',
+        created_at: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
+      },
+      {
+        content: "smiled through the whole family dinner while my anxiety was literally eating me alive",
+        mood: 'dissociating',
+        mood_emoji: '😶‍🌫️',
+        mood_color: '#e8b4c4',
+        reply_style: 'heart-to-heart',
+        show_on_feed: true,
+        auto_delete: false,
+        device_id: 'sample-6',
+        gender: 'anon',
+        created_at: new Date(Date.now() - 1000 * 60 * 400).toISOString(),
+      }
+    ];
+
+    const { error } = await supabaseClient
+      .from('vents')
+      .insert(starterVents);
+
+    if (error) {
+      console.error('❌ Error seeding starter vents:', error);
+    } else {
+      console.log('✅ Successfully seeded starter vents!');
+    }
+  } catch (err) {
+    console.error('❌ seedStarterVents error:', err);
+  }
+}
+
 // GET — Fetch feed (paginated, filtered)
 export async function GET(request: Request) {
   try {
@@ -152,15 +244,31 @@ export async function GET(request: Request) {
         query = query.order('created_at', { ascending: false });
       }
 
-      const { data, error } = await query.range(start, start + limit - 1);
+      let { data, error } = await query.range(start, start + limit - 1);
 
       if (error) {
         console.error('Supabase fetch feed error:', error);
         throw error;
       }
 
+      // If database is completely empty on the first page, seed starter vents!
+      if ((!data || data.length === 0) && page === 1 && mood === 'all' && style === 'all') {
+        await seedStarterVents(supabase);
+        // Fetch again after seeding
+        const refetch = await supabase
+          .from('vents')
+          .select('*')
+          .eq('show_on_feed', true)
+          .order('created_at', { ascending: false })
+          .range(start, start + limit - 1);
+        
+        if (!refetch.error && refetch.data) {
+          data = refetch.data;
+        }
+      }
+
       // Standardize schema fields
-      vents = data.map((item: any) => ({
+      vents = (data || []).map((item: any) => ({
         id: item.id,
         content: item.content,
         mood: item.mood,
