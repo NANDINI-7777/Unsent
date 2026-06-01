@@ -16,35 +16,32 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fetch the parent vent first to get its gender context and ensure it exists
-    let gender = 'anon';
+    // Fetch the parent vent first to get its gender context if available, but do not fail if it isn't found
+    const { gender: bodyGender } = body;
+    let gender = bodyGender || 'anon';
     let parentVent = null;
 
     if (supabase) {
-      const { data, error: ventError } = await supabase
-        .from('vents')
-        .select('*')
-        .eq('id', ventId)
-        .single();
+      try {
+        const { data, error: ventError } = await supabase
+          .from('vents')
+          .select('*')
+          .eq('id', ventId)
+          .single();
 
-      if (ventError || !data) {
-        return NextResponse.json(
-          { error: 'vent not found' },
-          { status: 404 }
-        );
+        if (!ventError && data) {
+          parentVent = data;
+          gender = data.gender || gender;
+        }
+      } catch (err) {
+        console.warn('Failed to query parent vent in Supabase:', err);
       }
-      parentVent = data;
-      gender = data.gender || 'anon';
     } else {
       const mockVent = await mockDb.getVentById(ventId);
-      if (!mockVent) {
-        return NextResponse.json(
-          { error: 'vent not found' },
-          { status: 404 }
-        );
+      if (mockVent) {
+        parentVent = mockVent;
+        gender = mockVent.gender || gender;
       }
-      parentVent = mockVent;
-      gender = mockVent.gender || 'anon';
     }
 
     // Generate reply via Groq API (or mock fallback) using the correct gender context
@@ -73,14 +70,16 @@ export async function POST(request: Request) {
         throw replyError;
       }
 
-      // Increment reply count on vent
-      const { error: updateError } = await supabase
-        .from('vents')
-        .update({ reply_count: (parentVent.reply_count || 0) + 1 })
-        .eq('id', ventId);
+      // Increment reply count on vent if parentVent exists
+      if (parentVent) {
+        const { error: updateError } = await supabase
+          .from('vents')
+          .update({ reply_count: (parentVent.reply_count || 0) + 1 })
+          .eq('id', ventId);
 
-      if (updateError) {
-        console.error('Failed to update reply count in Supabase:', updateError);
+        if (updateError) {
+          console.error('Failed to update reply count in Supabase:', updateError);
+        }
       }
 
       reply = {

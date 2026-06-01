@@ -279,7 +279,7 @@ export const mockDb = {
       } else if (isFriendOrGhost) {
         pool = replyStyle === 'fr tho'
           ? [`real talk: agar dost ghost kar rahe hain toh unhe jaane do. tere validation kisi ke mohtaj nahi hai. protect your peace.`, `agar blocked ho toh unke peeche mat bhaago. khud ki self-respect sabse pehle rakh bro.`]
-          : [`abey usko fark padta toh shaayad wo aisa karta hi nahi yrr... uske dimaag me kuch aur hi chal raha hoga. terko uske baare me itna sochne ki koi zaroorat nahi hai, apna dil mat kharab kar, jaakar chill maar yahan... uski aesi ki taisi 🤌🏻`, `dost ke ghost karne se sach me dukh hota hai. par tu akela nahi hai yaar, tu bohot behtar log deserve karta hai. 🤍`];
+          : [`abey usko fark padta toh shaayad wo aisa karta hi nahi yrr... uske dimaag me kuch aur hi chal raha hoga. terko uske baare me itna sochne ki koi zaroorat nahi hai, apna dil mat kharab kar, jaakar chill maar yahan... usko bhaad me jaane de yrr 🙄`, `dost ke ghost karne se sach me dukh hota hai. par tu akela nahi hai yaar, tu bohot behtar log deserve karta hai. 🤍`];
       } else if (isFamilyOrParent) {
         pool = replyStyle === 'fr tho'
           ? [`real talk: parents kabhi kabhi apni insecurity hum par project karte hain. unki baato ko dil pe mat le aur apna raasta bana.`, `ghar walo ki comparison chalti rahegi, tu unke expectation ke liye apni life spoil mat kar.`]

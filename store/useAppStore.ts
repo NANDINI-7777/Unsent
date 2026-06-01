@@ -93,6 +93,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
           ventContent: vent.content,
           mood: vent.mood,
           replyStyle: vent.replyStyle,
+          gender: vent.gender,
         }),
       });
 
