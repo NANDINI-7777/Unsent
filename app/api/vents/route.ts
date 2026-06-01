@@ -267,7 +267,7 @@ export async function GET(request: Request) {
       // Build query
       let query = supabase
         .from('vents')
-        .select('*')
+        .select('*, replies(count)')
         .eq('show_on_feed', true);
 
       // Filter by mood
@@ -305,7 +305,7 @@ export async function GET(request: Request) {
         // Fetch again after seeding
         const refetch = await supabase
           .from('vents')
-          .select('*')
+          .select('*, replies(count)')
           .eq('show_on_feed', true)
           .order('created_at', { ascending: false })
           .range(start, start + limit - 1);
@@ -326,7 +326,7 @@ export async function GET(request: Request) {
         showOnFeed: item.show_on_feed,
         autoDelete: item.auto_delete,
         deviceId: item.device_id,
-        replyCount: item.reply_count,
+        replyCount: item.replies?.[0]?.count || 0,
         gender: item.gender || 'anon',
         createdAt: item.created_at,
         expiresAt: item.expires_at,

@@ -187,7 +187,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       try {
         let query = supabase
           .from('vents')
-          .select('*');
+          .select('*, replies(count)');
 
         if (currentUser) {
           // Fetch vents belonging to this user or this device
@@ -211,7 +211,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           showOnFeed: item.show_on_feed,
           autoDelete: item.auto_delete,
           deviceId: item.device_id,
-          replyCount: item.reply_count,
+          replyCount: item.replies?.[0]?.count || 0,
           gender: item.gender || 'anon',
           createdAt: item.created_at,
           expiresAt: item.expires_at,
