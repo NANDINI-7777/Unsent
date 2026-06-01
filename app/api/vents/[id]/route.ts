@@ -104,15 +104,6 @@ export async function DELETE(
         );
       }
 
-      const createdTime = new Date(vent.created_at).getTime();
-      const oneHour = 60 * 60 * 1000;
-      if (Date.now() - createdTime > oneHour) {
-        return NextResponse.json(
-          { error: 'cannot delete: older than 1 hour' },
-          { status: 403 }
-        );
-      }
-
       const { error: deleteError } = await supabase
         .from('vents')
         .delete()
@@ -127,7 +118,7 @@ export async function DELETE(
 
       if (!success) {
         return NextResponse.json(
-          { error: 'cannot delete: vent not found, not yours, or older than 1 hour' },
+          { error: 'cannot delete: vent not found or not yours' },
           { status: 403 }
         );
       }

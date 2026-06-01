@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { History, LogOut, Key, Mail, ShieldAlert, ChevronRight, PenLine, ArrowRight, Loader2 } from 'lucide-react';
+import { History, LogOut, Key, Mail, ShieldAlert, ChevronRight, PenLine, ArrowRight, Loader2, Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useIdentityStore } from '@/store/useIdentityStore';
 import { translateMood } from '@/lib/translations';
 
 export function HistoryScreen() {
@@ -21,6 +22,39 @@ export function HistoryScreen() {
   useEffect(() => {
     initAuth();
   }, [initAuth]);
+
+  const handleDeleteVent = async (ventId: string) => {
+    const deviceId = useIdentityStore.getState().deviceId;
+    try {
+      const response = await fetch(`/api/vents/${ventId}?deviceId=${deviceId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        // Update local storage history
+        if (typeof window !== 'undefined') {
+          const localHistoryJson = localStorage.getItem('unsent_local_history') || '[]';
+          const localHistory = JSON.parse(localHistoryJson);
+          const updatedHistory = localHistory.filter((v: any) => v.id !== ventId);
+          localStorage.setItem('unsent_local_history', JSON.stringify(updatedHistory));
+
+          // Also clean up any mirrored local replies for this vent
+          const localRepliesJson = localStorage.getItem('unsent_local_replies') || '[]';
+          const localReplies = JSON.parse(localRepliesJson);
+          const updatedReplies = localReplies.filter((r: any) => r.ventId !== ventId);
+          localStorage.setItem('unsent_local_replies', JSON.stringify(updatedReplies));
+        }
+        
+        // Refresh Zustand list
+        fetchUserHistory();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to delete vent');
+      }
+    } catch (err) {
+      console.error('Delete vent error:', err);
+      alert('Failed to delete vent due to a network issue.');
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,13 +322,27 @@ export function HistoryScreen() {
                               <span>{vent.moodEmoji}</span>
                               <span className="text-text-mid font-medium">{translateMood(vent.mood, 'en')}</span>
                             </span>
-                            <span className="text-[9px] font-body text-text-soft">
-                              {new Date(vent.createdAt).toLocaleDateString(undefined, {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9px] font-body text-text-soft">
+                                {new Date(vent.createdAt).toLocaleDateString(undefined, {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (confirm('Delete this vent forever? This will remove all replies and cannot be undone. 🌸')) {
+                                    await handleDeleteVent(vent.id);
+                                  }
+                                }}
+                                className="p-1 rounded-md text-text-soft hover:text-pink-500 hover:bg-pink-100/50 transition-colors cursor-pointer flex items-center justify-center"
+                                title="Delete Vent"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
                           </div>
 
                           {/* Content Snip */}

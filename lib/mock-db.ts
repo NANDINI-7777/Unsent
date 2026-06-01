@@ -227,9 +227,6 @@ export const mockDb = {
   async deleteVent(ventId: string, deviceId: string): Promise<boolean> {
     const vent = vents.find(v => v.id === ventId);
     if (!vent || vent.deviceId !== deviceId) return false;
-    // Can only delete within 1 hour
-    const oneHour = 60 * 60 * 1000;
-    if (Date.now() - new Date(vent.createdAt).getTime() > oneHour) return false;
     vents = vents.filter(v => v.id !== ventId);
     replies = replies.filter(r => r.ventId !== ventId);
     return true;
