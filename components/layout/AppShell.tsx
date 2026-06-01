@@ -130,6 +130,17 @@ export function AppShell({ children }: AppShellProps) {
     };
   }, [deviceId, identityInitialized, user?.id]);
 
+  // Auto-dismiss floating toast notification after 5 seconds
+  useEffect(() => {
+    if (!activeNotification) return;
+
+    const timer = setTimeout(() => {
+      setActiveNotification(null);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [activeNotification, setActiveNotification]);
+
   return (
     <div className="relative min-h-dvh flex flex-col w-full">
       {/* Calming GPU-accelerated WebGL Shader Background */}
