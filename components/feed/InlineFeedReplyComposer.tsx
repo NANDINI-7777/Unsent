@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Send } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { useIdentityStore } from '@/store/useIdentityStore';
 import { useAppStore } from '@/store/useAppStore';
 import { TRANSLATIONS } from '@/lib/translations';
@@ -84,15 +84,19 @@ export function InlineFeedReplyComposer({ ventId, onReplySent }: InlineFeedReply
         />
         <motion.button
           onClick={handleSend}
-          disabled={isSending}
+          disabled={isSending || !content.trim()}
           className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 self-end transition-all ${
-            content.trim()
-              ? 'bg-gradient-to-br from-pink-400 to-pink-500 text-white shadow-pink'
-              : 'bg-pink-100 text-text-soft'
+            content.trim() && !isSending
+              ? 'bg-gradient-to-br from-pink-400 to-pink-500 text-white shadow-pink cursor-pointer'
+              : 'bg-pink-100 text-text-soft cursor-not-allowed'
           }`}
-          whileTap={{ scale: 0.9 }}
+          whileTap={content.trim() && !isSending ? { scale: 0.9 } : {}}
         >
-          <Send size={16} />
+          {isSending ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Send size={16} />
+          )}
         </motion.button>
       </div>
     </motion.div>

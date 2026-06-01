@@ -235,6 +235,24 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       localVents = localVents.filter((v: any) => v.deviceId === deviceId);
     }
 
+    // Dynamic replyCount calculation from localStorage to resolve the offline zero replies count glitch
+    if (typeof window !== 'undefined') {
+      try {
+        const localRepliesJson = localStorage.getItem('unsent_local_replies') || '[]';
+        const localReplies: Reply[] = JSON.parse(localRepliesJson);
+        
+        localVents = localVents.map((v: any) => {
+          const myReplies = localReplies.filter(r => r.ventId === v.id);
+          return {
+            ...v,
+            replyCount: Math.max(v.replyCount || 0, myReplies.length),
+          };
+        });
+      } catch (err) {
+        console.error('Failed to sync offline history replyCount:', err);
+      }
+    }
+
     // Sort newest first
     localVents.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 

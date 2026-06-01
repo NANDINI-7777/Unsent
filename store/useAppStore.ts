@@ -99,6 +99,32 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
       if (response.ok) {
         const reply = await response.json();
+
+        // Persist background AI reply in client-side localStorage to prevent data loss and zero count glitch on refreshes
+        if (typeof window !== 'undefined') {
+          try {
+            // 1. Save reply to unsent_local_replies
+            const localRepliesJson = localStorage.getItem('unsent_local_replies') || '[]';
+            const localReplies = JSON.parse(localRepliesJson);
+            if (!localReplies.some((r: any) => r.id === reply.id)) {
+              localReplies.push(reply);
+              localStorage.setItem('unsent_local_replies', JSON.stringify(localReplies));
+            }
+
+            // 2. Increment replyCount of the parent vent in unsent_local_history
+            const localHistoryJson = localStorage.getItem('unsent_local_history') || '[]';
+            const localHistory = JSON.parse(localHistoryJson);
+            const updatedHistory = localHistory.map((v: any) => {
+              if (v.id === vent.id) {
+                return { ...v, replyCount: Math.max(v.replyCount || 0, 1) };
+              }
+              return v;
+            });
+            localStorage.setItem('unsent_local_history', JSON.stringify(updatedHistory));
+          } catch (err) {
+            console.error('Failed to persist background AI reply locally:', err);
+          }
+        }
         
         // Standardize AI tag alias
         const isAI = !reply.deviceId || reply.deviceId === 'server' || reply.deviceId.startsWith('ai');
