@@ -23,6 +23,29 @@ Built with a stunning **baby pink glassmorphism design system**, fluid spring-lo
   <img src="public/screenshots/history_recovery.png" width="31%" alt="History Recovery" style="border-radius: 16px;" />
 </p>
 
+### 📱 Page-by-Page Walkthrough
+
+*   **🏠 Home / Landing Screen** (Top & Bottom Previews)
+    *   **Welcome Badge**: You are immediately assigned a secure anonymous session with a deterministic stranger number and dynamic tracking details.
+    *   **Curated Quotes**: A rolling pool of 8 deep, sarcasm-laced, and poetic thoughts that can be dynamically shuffled using the Sparkles button with custom spring transitions.
+    *   **Direct Navigation**: Large primary call-to-actions to either start venting your feelings instantly or browse the live community feed.
+*   **💬 Live Public Feed** (Feed Preview)
+    *   **Shared Confessions**: Read vents posted globally by other minds over the last 48 hours.
+    *   **Smart Filter Chips**: Sort feeds by mood tags (`cooked 🥴`, `dead inside 💀`) or specific help types (`Needs comfort 💌`, `Needs advice 💡`, `Needs roasts 💀`).
+    *   **Interactive Public Threads**: Expand any card's replies to view the dialogue. Safe, deterministic hashing converts device IDs into readable stranger tags (e.g. `stranger #4829`) so you can follow individual conversations while keeping everyone 100% anonymous.
+*   **✍️ Let It Out** (Vent Preview)
+    *   **Express Yourself**: Compose your thought in a clean, glassmorphic text box (max 500 characters).
+    *   **Privacy Switches**: Keep the vent completely private (`just for me`), broadcast to the public feed (`show on feed`), or schedule automatic self-destruction (`auto-delete 24h`).
+    *   **Tailored Feedback**: Select your gender context to adjust conversational verbs/pronouns, and choose how the world should respond—empathetic comfort (`heart-to-heart 🫂`), direct advice (`fr tho 💡`), or witty lightheartedness (`roast me 💀`).
+*   **⏳ The Waiting Room & Toast Notifications**
+    *   **Asynchronous Processing**: Once submitted, you can immediately leave the waiting screen to explore the feed! The AI reply runs in the background.
+    *   **Floating Notifications**: A beautiful top-down glassmorphic toast notification alerts you the moment the reply arrives. Clicking it navigates straight to the conversation.
+    *   **Notification Inbox**: Missed alerts are queued as a pulsing pink counter on the header's Bell icon, opening a private alerts drawer to view all past unread items.
+*   **💫 Credentials Recovery & History** (History Preview)
+    *   **Anonymous Log**: Access your private, stateless personal log of past vents and replies saved directly in your browser cache.
+    *   **Sync Recovery**: Authenticate with your email and password. If the email doesn't exist, the system registers you on-the-fly to keep setup completely frictionless.
+    *   **History Sync**: Logging in automatically links all prior anonymous local vents to your new cloud account, merging your diary history instantly.
+
 ---
 
 ## ✨ Features
