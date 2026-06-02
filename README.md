@@ -13,9 +13,14 @@ Built with a stunning **baby pink glassmorphism design system**, fluid spring-lo
 ## 📸 App Preview
 
 <p align="center">
-  <img src="public/screenshots/landing_full.jpg" width="31%" alt="Landing Screen" style="border-radius: 16px; margin: 1%;" />
-  <img src="public/screenshots/feed_preview.jpg" width="31%" alt="Feed Screen" style="border-radius: 16px; margin: 1%;" />
-  <img src="public/screenshots/vent_preview.jpg" width="31%" alt="Vent Composer" style="border-radius: 16px; margin: 1%;" />
+  <img src="public/screenshots/landing_top.png" width="48%" alt="Landing Page Top" style="border-radius: 16px; margin-right: 1%;" />
+  <img src="public/screenshots/landing_bottom.png" width="48%" alt="Landing Page Bottom" style="border-radius: 16px;" />
+</p>
+
+<p align="center">
+  <img src="public/screenshots/feed_preview.png" width="31%" alt="Feed Screen" style="border-radius: 16px; margin-right: 1%;" />
+  <img src="public/screenshots/vent_preview.png" width="31%" alt="Vent Composer" style="border-radius: 16px; margin-right: 1%;" />
+  <img src="public/screenshots/history_recovery.png" width="31%" alt="History Recovery" style="border-radius: 16px;" />
 </p>
 
 ---
