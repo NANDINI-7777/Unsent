@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Sparkles, Loader2 } from 'lucide-react';
 import type { Vent, Reply } from '@/types';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -53,9 +55,63 @@ const COPING_TIPS: Record<string, Record<string, string>> = {
 };
 
 export function MessageThread({ vent, reply }: MessageThreadProps) {
-  const { language } = useAppStore();
+  const { language, setCurrentReply } = useAppStore();
+  const [isRefining, setIsRefining] = useState(false);
+
   const moodKey = vent.mood.toLowerCase().trim();
   const copingTip = COPING_TIPS[moodKey]?.[language] || COPING_TIPS['totally fine'][language];
+
+  const isAI = !reply.deviceId || reply.deviceId === 'server' || reply.deviceId.startsWith('ai');
+
+  const handleRefine = async () => {
+    if (isRefining) return;
+    setIsRefining(true);
+    try {
+      const response = await fetch('/api/reply/ai/refine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          replyId: reply.id,
+          ventContent: vent.content,
+          mood: vent.mood,
+          replyStyle: vent.replyStyle,
+          gender: vent.gender || 'anon',
+          previousReply: reply.content,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to refine reply');
+      }
+
+      const data = await response.json();
+      if (data.reply) {
+        // Update AppStore state
+        setCurrentReply(data.reply);
+
+        // Update localStorage
+        if (typeof window !== 'undefined') {
+          try {
+            const localRepliesJson = localStorage.getItem('unsent_local_replies') || '[]';
+            const localReplies = JSON.parse(localRepliesJson);
+            const updatedReplies = localReplies.map((r: any) => {
+              if (r.id === reply.id) {
+                return data.reply;
+              }
+              return r;
+            });
+            localStorage.setItem('unsent_local_replies', JSON.stringify(updatedReplies));
+          } catch (err) {
+            console.error('Failed to sync updated reply to local storage:', err);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error refining AI reply:', err);
+    } finally {
+      setIsRefining(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5 px-4">
@@ -85,7 +141,7 @@ export function MessageThread({ vent, reply }: MessageThreadProps) {
         transition={{ delay: 0.4, duration: 0.5, type: 'spring', stiffness: 200, damping: 20 }}
         className="self-start max-w-[85%] flex flex-col gap-3"
       >
-        <div className="bubble-received px-5 py-4">
+        <div className="bubble-received px-5 py-4 relative">
           {/* Mystery label */}
           <div className="flex items-center gap-2 mb-2">
             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-300 to-pink-500 flex items-center justify-center">
@@ -93,9 +149,33 @@ export function MessageThread({ vent, reply }: MessageThreadProps) {
             </div>
             <span className="text-xs font-body text-pink-500 font-medium">??? stranger</span>
           </div>
-          <p className="font-body text-[15px] text-text-dark leading-relaxed">
+          <p className="font-body text-[15px] text-text-dark leading-relaxed pr-2">
             {reply.content}
           </p>
+
+          {/* AI Refine Button */}
+          {isAI && (
+            <div className="mt-3 pt-2 border-t border-pink-100/50 flex justify-end">
+              <motion.button
+                onClick={handleRefine}
+                disabled={isRefining}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-100 hover:bg-pink-200/60 text-pink-500 font-body text-xs font-semibold tracking-wide transition-all duration-300 disabled:opacity-60 cursor-pointer"
+                whileTap={{ scale: 0.96 }}
+              >
+                {isRefining ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>refining...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Refine Reply ✨</span>
+                  </>
+                )}
+              </motion.button>
+            </div>
+          )}
         </div>
         
         {/* Physiological Coping Suggestion Card */}

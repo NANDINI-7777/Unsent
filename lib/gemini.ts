@@ -246,3 +246,63 @@ CRITICAL RULES:
     return generateMockRephrase(content);
   }
 }
+
+export async function generateRefinedAIReply(
+  ventContent: string,
+  mood: string,
+  replyStyle: string,
+  gender: string = 'anon',
+  previousReply: string
+): Promise<string> {
+  if (!GOOGLE_AI_API_KEY) {
+    console.log('⚠️ [Groq API] No GOOGLE_AI_API_KEY. Using mock refined reply fallback.');
+    return mockDb.generateMockReply(ventContent, mood, replyStyle, gender);
+  }
+
+  try {
+    const basePrompt = getSystemPrompt(replyStyle, gender);
+    const systemPrompt = `${basePrompt}\n\nREFINEMENT INSTRUCTION:\nThe user previously received this reply from you: "${previousReply}".\nThey asked for a refined/different response to their vent.\nGenerate a fresh, alternative response that says it differently, keeping the same style but avoiding the exact same starting sentences or phrasing.`;
+
+    console.log('🔮 [Groq API] Refining/regenerating AI reply...');
+
+    const response = await fetch(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GOOGLE_AI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `The student's mood: ${mood}\n\nTheir vent:\n"${ventContent}"\n\nYour refined reply:` }
+          ],
+          temperature: 0.9, // Higher temperature for variety
+          max_tokens: 250,
+          top_p: 0.95
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`❌ [Groq API] Refine error (Status: ${response.status}). Falling back to Mock DB.`);
+      return mockDb.generateMockReply(ventContent, mood, replyStyle, gender);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+    
+    if (!text) {
+      console.warn('⚠️ [Groq API] Refine returned empty text. Falling back to Mock DB.');
+      return mockDb.generateMockReply(ventContent, mood, replyStyle, gender);
+    }
+
+    console.log('✅ [Groq API] Successfully refined AI response!');
+    return text.trim();
+  } catch (error) {
+    console.error('❌ [Groq API] Refine connection error. Falling back to Mock DB:', error);
+    return mockDb.generateMockReply(ventContent, mood, replyStyle, gender);
+  }
+}
