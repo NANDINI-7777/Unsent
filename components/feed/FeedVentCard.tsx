@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Loader2 } from 'lucide-react';
+import { MessageCircle, Loader2, Share2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Vent, Reply } from '@/types';
 import { InlineFeedReplyComposer } from './InlineFeedReplyComposer';
@@ -11,9 +11,10 @@ import { TRANSLATIONS, translateMood } from '@/lib/translations';
 
 interface FeedVentCardProps {
   vent: Vent;
+  onShare?: () => void;
 }
 
-export function FeedVentCard({ vent }: FeedVentCardProps) {
+export function FeedVentCard({ vent, onShare }: FeedVentCardProps) {
   const [showReply, setShowReply] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [repliesList, setRepliesList] = useState<Reply[]>([]);
@@ -188,13 +189,26 @@ export function FeedVentCard({ vent }: FeedVentCardProps) {
                 </button>
               )}
             </div>
-            <motion.button
-              onClick={() => setShowReply(!showReply)}
-              className="text-xs font-body font-medium text-pink-500 hover:text-pink-600 transition-colors"
-              whileTap={{ scale: 0.95 }}
-            >
-              {showReply ? t.cardClose : t.cardReplyBtn}
-            </motion.button>
+            <div className="flex items-center gap-3">
+              {onShare && (
+                <motion.button
+                  onClick={onShare}
+                  className="text-xs font-body font-semibold text-text-soft hover:text-pink-500 transition-colors flex items-center gap-1 cursor-pointer"
+                  whileTap={{ scale: 0.93 }}
+                  title="Share Card as Image"
+                >
+                  <Share2 size={12} />
+                  <span>Share Card</span>
+                </motion.button>
+              )}
+              <motion.button
+                onClick={() => setShowReply(!showReply)}
+                className="text-xs font-body font-semibold text-pink-500 hover:text-pink-600 transition-colors cursor-pointer"
+                whileTap={{ scale: 0.95 }}
+              >
+                {showReply ? t.cardClose : t.cardReplyBtn}
+              </motion.button>
+            </div>
           </div>
 
           {/* Inline reply composer */}

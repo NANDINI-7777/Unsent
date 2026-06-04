@@ -172,3 +172,77 @@ export async function generateAIReply(
     return mockDb.generateMockReply(ventContent, mood, replyStyle, gender);
   }
 }
+
+export function generateMockRephrase(content: string): string {
+  let text = content.trim();
+  if (!text) return "";
+  // Soft cleanup: make lowercase-first for that aesthetic look
+  text = text.charAt(0).toLowerCase() + text.slice(1);
+  if (!text.endsWith('.') && !text.endsWith('?') && !text.endsWith('!')) {
+    text += '...';
+  }
+  const moodEmojis = [' 🥀', ' 🫠', ' 😶‍🌫️', ' 🙃', ' 💀', ' 🤌🏻'];
+  const emoji = moodEmojis[Math.floor(Math.random() * moodEmojis.length)];
+  return text + emoji;
+}
+
+export async function generateRephrasedVent(content: string): Promise<string> {
+  if (!GOOGLE_AI_API_KEY) {
+    console.log('⚠️ [Groq API] No GOOGLE_AI_API_KEY. Using mock rephrasing fallback.');
+    return generateMockRephrase(content);
+  }
+
+  try {
+    const systemPrompt = `You are a creative text rephraser for a mobile app named Unsent.
+Your job is to rewrite the user's raw, messy, or emotional draft text to sound more cohesive, beautiful, aesthetic, and emotionally resonant.
+Keep it deeply relatable, raw, and modern. If the source is in Roman Hinglish, write in natural, conversational Hinglish. If the source is in English, write in clean, emotional English.
+
+CRITICAL RULES:
+1. The rephrased output MUST be under 400 characters long so it fits perfectly on a screen.
+2. Keep the exact core message, topic, and emotional tone of the original text.
+3. Do NOT add any introductory text, prefix (e.g. "Here is the rephrased text:"), or wrapping quotes. Just return the raw rephrased text.
+4. Avoid sounding robotic, overly generic, or preachy. Keep it raw, poetic, or sarcastic depending on the original tone.`;
+
+    console.log('🔮 [Groq API] Rephrasing user vent text...');
+
+    const response = await fetch(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GOOGLE_AI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Original text:\n"${content}"\n\nRephrased:` }
+          ],
+          temperature: 0.85,
+          max_tokens: 200,
+          top_p: 0.95
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`❌ [Groq API] Rephrase error (Status: ${response.status}). Falling back to mock.`);
+      return generateMockRephrase(content);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+    
+    if (!text) {
+      console.warn('⚠️ [Groq API] Rephrase returned empty text. Falling back to mock.');
+      return generateMockRephrase(content);
+    }
+
+    console.log('✅ [Groq API] Successfully rephrased user vent!');
+    return text.trim().replace(/^"|"$/g, ''); // strip any wrapping quotes if the AI returned them
+  } catch (error) {
+    console.error('❌ [Groq API] Rephrase connection error. Falling back to mock:', error);
+    return generateMockRephrase(content);
+  }
+}

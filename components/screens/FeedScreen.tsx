@@ -8,6 +8,7 @@ import { useFeedStore } from '@/store/useFeedStore';
 import { useAppStore } from '@/store/useAppStore';
 import { FeedVentCard } from '@/components/feed/FeedVentCard';
 import { TRANSLATIONS, translateMood } from '@/lib/translations';
+import { ShareCardModal } from '@/components/ui/ShareCardModal';
 
 const moodFilters = [
   { label: 'all', emoji: '✨' },
@@ -32,6 +33,7 @@ export function FeedScreen() {
   } = useFeedStore();
 
   const [styleFilter, setStyleFilter] = useState<string>('all');
+  const [sharingVent, setSharingVent] = useState<any>(null);
 
   const fetchVents = useCallback(
     async (pageNum: number, moodFilter: string, currentStyle: string, append = false) => {
@@ -206,7 +208,7 @@ export function FeedScreen() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
           >
-            <FeedVentCard vent={vent} />
+            <FeedVentCard vent={vent} onShare={() => setSharingVent(vent)} />
           </motion.div>
         ))}
 
@@ -259,6 +261,15 @@ export function FeedScreen() {
           </motion.button>
         )}
       </div>
+
+      {/* Share Card Modal Overlay */}
+      {sharingVent && (
+        <ShareCardModal
+          vent={sharingVent}
+          onClose={() => setSharingVent(null)}
+          language={language}
+        />
+      )}
     </div>
   );
 }
